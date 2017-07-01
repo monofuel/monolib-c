@@ -23,13 +23,18 @@ int m_append(m_vec* dest, m_vec* src);
 void m_delete_vec(m_vec*);
 int m_pretty_print(m_vec *);
 
+int m_validate(m_vec * vec);
+const char * m_vec_error(int code);
+
 enum m_vector_errors {
 	M_VECTOR_INVALID_INDEX = 1,
 	M_VECTOR_INVALID_SIZE = 2,
+	M_VECTOR_INVALID_MEMBER_SIZE = 3,
 };
 
 enum m_vec_flags {
 	M_VECTOR_LAZY = 0x01,
+	// TODO initialize new values to zero flag
 };
 
 #endif

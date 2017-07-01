@@ -4,6 +4,19 @@
 #include <stdio.h>
 #include "../index.h"
 
+#ifdef NDEBUG
+#define m_vec_validate(vec) ((void) 0)
+#else
+#define m_vec_validate(vec) {\
+	int code = m_validate(vec); \
+	if (code != 0) { \
+		m_pretty_print(vec); \
+		fprintf(stderr, "%s\n", m_vec_error(code)); \
+		abort(); \
+	} \
+}
+#endif
+
 m_vec* m_new_vec(int initial_size, int member_size, int flags) {
 	m_vec* vec = malloc(sizeof(m_vec));
 	vec->member_size = member_size;
@@ -11,6 +24,7 @@ m_vec* m_new_vec(int initial_size, int member_size, int flags) {
 	vec->size = initial_size;
 	vec->array = malloc(initial_size * member_size);
 	vec->length = 0;
+	m_vec_validate(vec);
 	return vec;
 }
 
@@ -24,12 +38,13 @@ int m_get(m_vec* vec, void * buff, int index) {
 	}
 	void * value_ptr = (char *) vec->array + (index * vec->member_size);
 	memcpy(buff, value_ptr, vec->member_size);
+	m_vec_validate(vec);
 	return 0;
 }
 
 int m_set(m_vec* vec, void * buff, int index) {
 	if (index >= vec->size) {
-		if (vec->flags && M_VECTOR_LAZY) {
+		if (vec->flags & M_VECTOR_LAZY) {
 			vec->array = realloc(
 				vec->array,
 				vec->member_size * (vec->size++)
@@ -46,6 +61,7 @@ int m_set(m_vec* vec, void * buff, int index) {
 	}
 	void * value_ptr = (char *) vec->array + (index * vec->member_size);
 	memcpy(value_ptr, buff, vec->member_size);
+	m_vec_validate(vec);
 	return 0;
 }
 
@@ -63,12 +79,26 @@ int m_append(m_vec* dest, m_vec* src) {
 	void * dest_ptr = (char *) dest->array + (dest->length * dest->member_size);
 	memcpy(dest_ptr, src->array, src->length * dest->member_size);
 	dest->length += src->length;
+	m_vec_validate(dest);
+	m_vec_validate(src);
 	return 0;
 }
 
 void m_delete_vec(m_vec* vec) {
+	m_vec_validate(vec);
 	free(vec->array);
 	free(vec);
+}
+
+int m_validate(m_vec* vec) {
+	// TODO add check for canary in debug mode
+	if (vec->size < vec->length) {
+		return M_VECTOR_INVALID_SIZE;
+	}
+	if (vec->member_size < 1) {
+		return M_VECTOR_INVALID_MEMBER_SIZE;
+	}
+	return 0;
 }
 
 int m_pretty_print(m_vec * vec) {
@@ -78,4 +108,17 @@ int m_pretty_print(m_vec * vec) {
 		vec->member_size,
 		vec->flags);
 	return 0;
+}
+
+const char * m_vec_error(int code) {
+	switch(code) {
+		case M_VECTOR_INVALID_INDEX:
+			return "invalid index passed to vector";
+		case M_VECTOR_INVALID_SIZE:
+			return "invalid size on vector";
+		case M_VECTOR_INVALID_MEMBER_SIZE:
+			return "invalid member size for vector";
+		default:
+			return "bad error code";
+	}
 }
