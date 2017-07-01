@@ -60,9 +60,40 @@ void testMap() {
 
 void testVec() {
 	printf("testing vec\n");
-	m_vec* vec = m_new_vec(10);
+	m_vec* vec = m_new_vec(10, sizeof(int), 0);
+	m_pretty_print(vec);
+	for (int i = 0; i < 15; i++) {
+		m_push(vec,(void *) &i);
+	}
+	m_pretty_print(vec);
+	assert(vec->length == 15);
+	assert(vec->size > 15);
+	for (int i = 0; i < 15; i++) {
+		int val = 0;
+		m_get(vec,(void *) &val,i);
+		assert(val == i);
+	}
+
+	m_vec* vec2 = m_new_vec(10, sizeof(int), 0);
+
+	for (int i = 0; i < 20; i++) {
+		m_push(vec2,(void *) &i);
+	}
+	
+	assert(m_append(vec, vec2) == 0);
+	m_pretty_print(vec);
+	for (int i = 0; i < 15; i++) {
+		int val = 0;
+		assert(m_get(vec,(void *) &val, i) == 0);
+		assert(val == i);
+
+		assert(m_get(vec,(void *) &val, i + 15) == 0);
+		assert(val == i);
+	}
+
 	printf("cleaning up\n");
 	m_delete_vec(vec);
+	m_delete_vec(vec2);
 }
 
 void testList() {
@@ -82,6 +113,7 @@ int main(int argc, char * argv[]) {
 	printf("=======================\n");
 	testStrings();
 	testMap();
+	testVec();
 	printf("=======================\n");
 	printf("tests complete\n");
 	printf("=======================\n");

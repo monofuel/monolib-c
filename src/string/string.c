@@ -56,7 +56,7 @@ int m_string_pretty_print(m_string * str) {
 	if (err != 0) {
 		return err;
 	}
-	printf("{ size: %d, length: %d, array: \"%s\"}\n",
+	printf("{ size: %d, length: %d, array: \"%s\" }\n",
 		str-> size,
 		str->length,
 		text);
