@@ -8,7 +8,7 @@
 #define m_vec_validate(vec) ((void) 0)
 #else
 #define m_vec_validate(vec) {\
-	int code = m_validate(vec); \
+	unsigned int code = m_validate(vec); \
 	if (code != 0) { \
 		m_pretty_print(vec); \
 		fprintf(stderr, "%s\n", m_vec_error(code)); \
@@ -17,22 +17,26 @@
 }
 #endif
 
-m_vec* m_new_vec(int initial_size, int member_size, int flags) {
+m_vec* m_new_vec(unsigned int initial_size, size_t member_size, unsigned int flags) {
 	m_vec* vec = malloc(sizeof(m_vec));
 	vec->member_size = member_size;
 	vec->flags = flags;
 	vec->size = initial_size;
-	vec->array = malloc(initial_size * member_size);
+	if (flags & M_VECTOR_ZERO) {
+		vec->array = calloc(initial_size, member_size);
+	} else {
+		vec->array = malloc(initial_size * member_size);
+	}
 	vec->length = 0;
 	m_vec_validate(vec);
 	return vec;
 }
 
-int m_push(m_vec* vec, void* buff) {
+unsigned int m_push(m_vec* vec, void* buff) {
 	return m_set(vec, buff, vec->length);
 }
 
-int m_get(m_vec* vec, void * buff, int index) {
+unsigned int m_get(m_vec* vec, void * buff, unsigned int index) {
 	if (index > vec->length) {
 		return M_VECTOR_INVALID_INDEX;
 	}
@@ -42,7 +46,7 @@ int m_get(m_vec* vec, void * buff, int index) {
 	return 0;
 }
 
-int m_set(m_vec* vec, void * buff, int index) {
+unsigned int m_set(m_vec* vec, void * buff, unsigned int index) {
 	if (index >= vec->size) {
 		if (vec->flags & M_VECTOR_LAZY) {
 			vec->array = realloc(
@@ -65,7 +69,7 @@ int m_set(m_vec* vec, void * buff, int index) {
 	return 0;
 }
 
-int m_append(m_vec* dest, m_vec* src) {
+unsigned int m_append(m_vec* dest, m_vec* src) {
 	if (dest->member_size != src->member_size) {
 		return M_VECTOR_INVALID_SIZE;
 	}
@@ -90,7 +94,7 @@ void m_delete_vec(m_vec* vec) {
 	free(vec);
 }
 
-int m_validate(m_vec* vec) {
+unsigned int m_validate(m_vec* vec) {
 	// TODO add check for canary in debug mode
 	if (vec->size < vec->length) {
 		return M_VECTOR_INVALID_SIZE;
@@ -101,8 +105,8 @@ int m_validate(m_vec* vec) {
 	return 0;
 }
 
-int m_pretty_print(m_vec * vec) {
-	printf("{ length: %d, size: %d, member_size: %d, flags; %d }\n",
+unsigned int m_pretty_print(m_vec * vec) {
+	printf("{ length: %d, size: %d, member_size: %zx, flags; %d }\n",
 		vec->length,
 		vec->size,
 		vec->member_size,
@@ -110,7 +114,7 @@ int m_pretty_print(m_vec * vec) {
 	return 0;
 }
 
-const char * m_vec_error(int code) {
+const char * m_vec_error(unsigned int code) {
 	switch(code) {
 		case M_VECTOR_INVALID_INDEX:
 			return "invalid index passed to vector";

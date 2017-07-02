@@ -10,6 +10,13 @@ m_string * m_new_string(int initial_size) {
 	return str;
 }
 
+m_string * m_from_cstring(char * cstr) {
+	int length = strlen(cstr);
+	m_string * str = m_new_string(length);
+	m_append_cstring(str, cstr, length);
+	return str;
+}
+
 void m_addc(m_string * str, char c) {
 	m_push(str, &c);
 }
@@ -34,6 +41,26 @@ int m_get_cstring(m_string* str, char * dest, int length) {
 	memcpy(dest, str-> array, str->length);
 	dest[str->length] = 0;
 	return 0;
+}
+
+int m_strcmp(m_string* str1, m_string* str2) {
+	if (str1->length != str2->length) {
+		return str1->length - str2->length;
+	}
+	for (int i = 0; i < str1->length && i < str2->length; i++) {
+		char c1 = ((char *) str1->array)[i];
+		char c2 = ((char *) str2->array)[i];
+		if (c1 != c2) {
+			return c1 - c2;
+		}
+	}
+	return 0;
+}
+
+m_string* m_string_clone(m_string* src) {
+	m_string * str = m_new_string(src->length);
+	m_append(str, src);
+	return str;
 }
 
 void m_delete_string(m_string * str) {

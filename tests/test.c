@@ -47,13 +47,44 @@ void testStrings() {
 	assert(str->size == 10);
 	m_str_pretty_print(str);	
 
+	printf("test cloning and comparing strings\n");
+	m_delete_string(str);
+	str = m_from_cstring("hello world");
+	m_string * str2 = m_from_cstring("hello world");
+	m_string * str3 = m_string_clone(str);
+	assert(str->length == 11);
+	assert(str2->length == 11);
+	assert(str3->length == 11);
+	assert(m_strcmp(str, str2) == 0);
+	assert(m_strcmp(str2, str3) == 0);
+
 	printf("cleaning up\n");
 	m_delete_string(str);
+	m_delete_string(str2);
+	m_delete_string(str3);
 }
 
 void testMap() {
 	printf("testing map\n");
-	m_map* map = m_new_map(10);
+	m_map* map = m_new_map(100);
+	m_string * key1 = m_from_cstring("key 1");
+	int value = 5;
+	m_put(map, key1, &value);
+
+	m_string * key2 = m_from_cstring("key 2");
+	int other_value = 10;
+	m_put(map, key2, &other_value);
+
+	int * result = m_map_get(map, key1);
+	assert(result != 0);
+	assert(*result == value && value == 5);
+
+	result = m_map_get(map, key2);
+	assert(result != 0);
+	assert(*result == other_value && other_value == 10);
+
+	m_delete_string(key1);
+	m_delete_string(key2);
 	printf("cleaning up\n");
 	m_delete_map(map);
 }
