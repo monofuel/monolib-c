@@ -83,10 +83,24 @@ void testMap() {
 	assert(result != 0);
 	assert(*result == other_value && other_value == 10);
 
-	m_delete_string(key1);
-	m_delete_string(key2);
+	printf("testing collisions\n");
+	m_delete_map(map);
+	map = m_new_map(1);
+	m_put(map, key1, &value, 0);
+	m_put(map, key2, &other_value, 0);
+
+	result = m_map_get(map, key1);
+	assert(result != 0);
+	assert(*result == value && value == 5);
+
+	result = m_map_get(map, key2);
+	assert(result != 0);
+	assert(*result == other_value && other_value == 10);
+
 	printf("cleaning up\n");
 	m_delete_map(map);
+	m_delete_string(key1);
+	m_delete_string(key2);
 }
 
 void testVec() {
