@@ -69,11 +69,11 @@ void testMap() {
 	m_map* map = m_new_map(100);
 	m_string * key1 = m_from_cstring("key 1");
 	int value = 5;
-	m_put(map, key1, &value);
+	m_put(map, key1, &value, 0);
 
 	m_string * key2 = m_from_cstring("key 2");
 	int other_value = 10;
-	m_put(map, key2, &other_value);
+	m_put(map, key2, &other_value, 0);
 
 	int * result = m_map_get(map, key1);
 	assert(result != 0);

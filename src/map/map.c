@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "../index.h"
 
+// debugging imports
+#include <assert.h>
 #include <stdio.h>
 
 static unsigned int hash(m_map * map, m_string* key);
@@ -11,6 +13,7 @@ typedef struct {
 	void * value;
 	// linked list of records
 	m_list * collisions;
+	unsigned int flags;
 } record;
 
 m_map* m_new_map(unsigned int initial_size) {
@@ -20,7 +23,7 @@ m_map* m_new_map(unsigned int initial_size) {
 	return map;
 }
 
-void m_put(m_map* map, m_string * key, void * value) {
+void m_put(m_map* map, m_string * key, void * value, unsigned int flags) {
 	unsigned int index = hash(map, key);
 	printf("put hash %d\n", index);
 	record existing;
@@ -28,8 +31,10 @@ void m_put(m_map* map, m_string * key, void * value) {
 	// TODO check if strings collide and add collision if so
 	// set new value if strings equal
 	record new_record = {
+		.key = m_string_clone(key),
 		.value = value,
 		.collisions = 0,
+		.flags = flags,
 	};
 	m_set(map->table, &new_record, index);
 }
@@ -44,8 +49,29 @@ void * m_map_get(m_map* map, m_string * key) {
 }
 
 void m_delete_map(m_map* map) {
-	// note: does not free values in table.
-	// would be cool to use talloc()
+	// TODO would be cool to support talloc()
+	for (int i = 0; i < map->table->length; i++) {
+		record val;
+		m_get(map->table, &val, i);
+		if (val.flags & M_MAP_FREE) {
+			#ifdef NDEBUG
+			free(val.value);
+			#else
+			assert(val.value != 0);
+			assert(val.key != 0);
+			free(val.value);
+			val.value = 0;
+			#endif
+		}
+		if (val.key != 0) {
+			m_delete_string(val.key);
+			val.key = 0;
+		}
+		if (val.collisions != 0) {
+			m_delete_list(val.collisions);
+			val.collisions = 0;
+		}
+	}
 	m_delete_vec(map->table);
 	free(map);
 }
