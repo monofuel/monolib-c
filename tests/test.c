@@ -130,6 +130,19 @@ void testVec() {
 void testList() {
 	printf("testing list\n");
 	m_list* list = m_new_list();
+	int val = 1;
+	int val2 = 5;
+	m_list_push(list, &val);
+	assert(*((int *) list->first->value) == val);
+	assert(list->first->next == 0);
+	assert(list->first->prev == 0);
+
+	m_list_push(list, &val2);
+	assert(*((int *) list->first->value) == val);
+	assert(*((int *) list->last->value) == val2);
+	assert(*((int *) list->last->prev->value) == val);
+	assert(*((int *) list->first->next->value) == val2);
+
 	printf("cleaning up\n");
 	m_delete_list(list);
 }
@@ -145,6 +158,7 @@ int main(int argc, char * argv[]) {
 	testStrings();
 	testMap();
 	testVec();
+	testList();
 	printf("=======================\n");
 	printf("tests complete\n");
 	printf("=======================\n");
