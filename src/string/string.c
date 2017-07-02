@@ -5,22 +5,13 @@
 #include <stdio.h>
 #include "../index.h"
 
-m_string * m_new_string(int initialSize) {
-	m_string* str = malloc(sizeof(m_string));
-	str->size = initialSize;
-	str->array = calloc(initialSize, sizeof(char));
-	str->length = 0;
+m_string * m_new_string(int initial_size) {
+	m_string* str = m_new_vec(initial_size, sizeof(char), 0);
 	return str;
 }
 
 void m_addc(m_string * str, char c) {
-	if (str-> length + 1 > str->size) {
-		str->array = realloc(
-			str->array,
-			sizeof(char) * (str->size = str->size * MONO_RESIZE_MUL)
-		);
-	}
-	str->array[str->length++] = c;
+	m_push(str, &c);
 }
 
 void m_append_cstring(m_string * str, char * text, int length) {
@@ -30,7 +21,8 @@ void m_append_cstring(m_string * str, char * text, int length) {
 			sizeof(char) * (str->size = str->length + length)
 		);
 	}
-	memcpy(str->array + str->length, text, length);
+	void * dest_ptr = (char *) str->array + str->length;
+	memcpy(dest_ptr, text, length);
 	str->length += length;
 }
 
@@ -49,7 +41,7 @@ void m_delete_string(m_string * str) {
 	free(str);
 }
 
-int m_string_pretty_print(m_string * str) {
+int m_str_pretty_print(m_string * str) {
 	int buffSize = str->length + 1;
 	char * text = calloc(buffSize, sizeof(char));
 	int err = m_get_cstring(str, text, buffSize);

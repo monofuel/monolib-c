@@ -21,14 +21,14 @@ void testStrings() {
 	assert(strcmp("aaaaaaaaaa", text) == 0);
 	assert(str->length == 10);
 	assert(str->size == 10);
-	m_string_pretty_print(str);	
+	m_str_pretty_print(str);	
 
 	m_addc(str, 'b');
 	assert(m_get_cstring(str, text, STRING_BUFF_SIZE) == 0);
 	assert(strcmp("aaaaaaaaaab", text) == 0);
 	assert(str->length == 11);
 	assert(str->size > 10);
-	m_string_pretty_print(str);
+	m_str_pretty_print(str);
 
 	printf("cleaning up\n");
 	m_delete_string(str);
@@ -45,7 +45,7 @@ void testStrings() {
 	assert(strcmp("aaaaabbbbb", text) == 0);
 	assert(str->length == 10);
 	assert(str->size == 10);
-	m_string_pretty_print(str);	
+	m_str_pretty_print(str);	
 
 	printf("cleaning up\n");
 	m_delete_string(str);
@@ -79,7 +79,7 @@ void testVec() {
 	for (int i = 0; i < 20; i++) {
 		m_push(vec2,(void *) &i);
 	}
-	
+
 	assert(m_append(vec, vec2) == 0);
 	m_pretty_print(vec);
 	for (int i = 0; i < 15; i++) {
